@@ -1,0 +1,25 @@
+# Secrets et configuration locale
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Éditeurs et système
+.vscode/
+.idea/
+.DS_Store
+
+# Logs
+*.log
+
+# Données locales et résultats générés
+data/raw/
+data/processed/
+checkpoints/
+models/
