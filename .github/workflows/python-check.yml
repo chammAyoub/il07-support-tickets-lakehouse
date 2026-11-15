@@ -1,0 +1,21 @@
+name: Vérification Python
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  syntax-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Vérifier la syntaxe des fichiers Python
+        run: python -m compileall -q data ingestion lakehouse spark_jobs airflow
