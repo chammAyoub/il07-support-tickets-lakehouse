@@ -1,0 +1,11 @@
+# Configuration commune de la plateforme IL-07.
+#
+# Les services seront ajoutés progressivement, en collaboration
+# avec le membre responsable de chaque composant.
+#
+# Kafka et producteurs : Imane ZORY
+# MinIO et Hudi : Mohamed BAILLA
+# Spark : Ayoub CHAMMAKH
+# Airflow et dashboard : Zainab ERROSSAFI
+
+services: {}
