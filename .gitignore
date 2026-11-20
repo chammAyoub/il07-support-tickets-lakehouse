@@ -23,3 +23,6 @@ data/raw/
 data/processed/
 checkpoints/
 models/
+
+# Dataset Bitext généré localement
+data/tickets.jsonl
