@@ -26,6 +26,7 @@ services:
     image: apache/airflow:2.9.3
     environment:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW_CONN_KPI_DB: postgresql://kpi:kpi@kpi-db:5432/kpi
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
