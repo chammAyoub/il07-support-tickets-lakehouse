@@ -8,4 +8,49 @@
 # Spark : Ayoub CHAMMAKH
 # Airflow et dashboard : Zainab ERROSSAFI
 
-services: {}
+services:
+  # --- Zainab : base PostgreSQL des KPI (faux tickets Gold pour l'instant) ---
+  kpi-db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: kpi
+      POSTGRES_PASSWORD: kpi
+      POSTGRES_DB: kpi
+    volumes:
+      - ./db-init:/docker-entrypoint-initdb.d
+    ports:
+      - "5434:5432"
+
+  # --- Zainab : orchestration Airflow ---
+  airflow:
+    image: apache/airflow:2.9.3
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+    ports:
+      - "8085:8080"
+    depends_on:
+      - kpi-db
+    command: >
+      bash -c "airflow db migrate &&
+      (airflow users create --username admin --password admin
+      --firstname Zainab --lastname Errossafi --role Admin
+      --email admin@example.com || true) &&
+      (airflow scheduler &) &&
+      exec airflow webserver"
+
+  # --- Zainab : dashboard Grafana ---
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - kpi-db
+
+volumes:
+  grafana-data:
