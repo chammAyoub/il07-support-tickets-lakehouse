@@ -1,1 +1,3 @@
-SECRET_KEY = "GnEgv3tfzYKN0vlWP/IcsLg39DT1n5WZ6/YH9wIFTMLod/rd9eN66Z96"
+import os
+
+SECRET_KEY = os.environ.get("SUPERSET_SECRET_KEY", "cle_par_defaut_pour_dev_local")

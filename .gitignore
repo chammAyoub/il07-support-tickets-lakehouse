@@ -24,3 +24,4 @@ data/processed/
 checkpoints/
 models/
 airflow/logs/
+.env
