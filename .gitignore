@@ -24,4 +24,6 @@ data/processed/
 checkpoints/
 models/
 airflow/logs/
-.env
+
+# Dataset Bitext généré localement
+data/tickets.jsonl
