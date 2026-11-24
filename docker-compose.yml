@@ -8,8 +8,8 @@
 # Spark : Ayoub CHAMMAKH
 # Airflow et dashboard : Zainab ERROSSAFI
 
-
 services:
+  # Imane : Kafka
   kafka:
     image: apache/kafka:3.9.1
     container_name: il07-kafka
@@ -36,5 +36,59 @@ services:
     volumes:
       - kafka_data:/var/lib/kafka/data
 
+  # Zainab : base PostgreSQL des KPI
+  kpi-db:
+    image: postgres:16
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${KPI_DB_USER:-kpi}
+      POSTGRES_PASSWORD: ${KPI_DB_PASSWORD:-kpi}
+      POSTGRES_DB: ${KPI_DB_NAME:-kpi}
+    volumes:
+      - ./db-init:/docker-entrypoint-initdb.d
+    ports:
+      - "5434:5432"
+
+  # Zainab : orchestration Airflow
+  airflow:
+    image: apache/airflow:2.9.3
+    env_file:
+      - .env
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
+      AIRFLOW_CONN_KPI_DB: postgresql://${KPI_DB_USER:-kpi}:${KPI_DB_PASSWORD:-kpi}@kpi-db:5432/${KPI_DB_NAME:-kpi}
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./airflow/init_airflow.sh:/opt/airflow/init_airflow.sh
+    ports:
+      - "8085:8080"
+    depends_on:
+      - kpi-db
+    entrypoint: ["/bin/bash", "/opt/airflow/init_airflow.sh"]
+
+  # Zainab : dashboard Superset
+  superset:
+    build: ./superset
+    env_file:
+      - .env
+    environment:
+      SUPERSET_CONFIG_PATH: /app/pythonpath/superset_config.py
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
+    volumes:
+      - ./superset/superset_config.py:/app/pythonpath/superset_config.py
+      - ./superset/init_superset.sh:/app/init_superset.sh
+      - ./dashboards/il07_dashboard.zip:/tmp/il07_dashboard.zip
+      - superset-data:/app/superset_home
+    ports:
+      - "8088:8088"
+    depends_on:
+      - kpi-db
+    command: ["/bin/bash", "/app/init_superset.sh"]
+
 volumes:
   kafka_data:
+  superset-data:
