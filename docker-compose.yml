@@ -36,6 +36,47 @@ services:
     volumes:
       - kafka_data:/var/lib/kafka/data
 
+  # Mohamed : Data Lake MinIO (S3)
+  minio:
+    image: bitnamilegacy/minio:latest
+    container_name: il07-minio
+    hostname: minio
+    env_file:
+      - .env
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      MINIO_DEFAULT_BUCKETS: ${MINIO_BUCKET:-lakehouse}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/bitnami/minio/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio-init:
+    image: bitnamilegacy/minio:latest
+    container_name: il07-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    env_file:
+      - .env
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        mc --config-dir /tmp/.mc alias set local http://minio:9000 $${MINIO_ROOT_USER:-minioadmin} $${MINIO_ROOT_PASSWORD:-minioadmin}
+        mc --config-dir /tmp/.mc mb -p local/$${MINIO_BUCKET:-lakehouse}
+        for zone in bronze silver gold models; do
+          printf '' | mc --config-dir /tmp/.mc pipe local/$${MINIO_BUCKET:-lakehouse}/$${zone}/.keep
+        done
+        echo "MinIO lakehouse bucket initialized (bronze, silver, gold, models)."
+
   # Zainab : base PostgreSQL des KPI
   kpi-db:
     image: postgres:16
@@ -91,4 +132,5 @@ services:
 
 volumes:
   kafka_data:
+  minio_data:
   superset-data:
